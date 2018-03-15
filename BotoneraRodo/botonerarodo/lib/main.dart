@@ -54,7 +54,14 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  List<CustomSound> _defSound;
+  List<CustomSound> _soundList;
+  List<CustomSound> _defSounds = [
+    new CustomSound("AhiLaTeni", "sounds", "Ahí la tení"),
+    new CustomSound("Hienas", "sounds", "Matensé, hienas"),
+    new CustomSound("RikaChikita", "sounds", "Rika Chikita"),
+    new CustomSound("YChi", "sounds", "Y Chi"),
+    new CustomSound("YEia", "sounds", "Y eia? Como esta eia?"),
+  ];
 
   Duration duration;
   Duration position;
@@ -157,7 +164,65 @@ class _MyHomePageState extends State<MyHomePage> {
         centerTitle: true,
         title: new Text(widget.title),
       ),
+      body: new GridView.count(
+        crossAxisCount: 2,
+        children: <Widget>[
+          new Card(
+            child: new Stack(
+              children: <Widget>[
+                new Image(
+                  image: new AssetImage("images/AriDante.jpeg"),
+                  fit: BoxFit.cover,
+                ),
+                new Column(
+                  mainAxisSize: MainAxisSize.max,
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: <Widget>[
+                    new Row(
+                      children: <Widget>[
+                        new Column(
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: <Widget>[
+                            new Text(
+                              _defSounds[0].name,
+                              textAlign: TextAlign.center,
+                            ),
+                            new Text(
+                              _defSounds[0].desc,
+                              textAlign: TextAlign.center,
+                            )
+                          ],
+                        )
+                      ],
+                    ),
+                    new Row(
+                      children: <Widget>[
+                        new IconButton(
+                          icon: new Icon(Icons.play_circle_filled),
+                          onPressed: dummy,
+                        ),
+                        new IconButton(
+                          icon: new Icon(Icons.share),
+                          onPressed: dummy,
+                        )
+                      ],
+                    )
+                  ],
+                )
+              ],
+            ),
+          ),
+          new Card(
+            child: new Image.asset("images/CloudSword.jpeg"),
+          ),
+        ],
+      ),
     );
+  }
+
+  void dummy()
+  {
+
   }
 }
 

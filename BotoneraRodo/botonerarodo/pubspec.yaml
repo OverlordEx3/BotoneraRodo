@@ -40,6 +40,14 @@ flutter:
     - sounds/RikaChikita.ogg
     - sounds/YChi.ogg
     - sounds/YEia.ogg
+
+    #imagenes
+
+    - images/AriDante.jpeg
+    - images/CircleWolf.jpeg
+    - images/CloudSword.jpeg
+    - images/cosmicWolf.jpeg
+    - images/TigerTree.jpeg
     
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.io/assets-and-images/#resolution-aware.
