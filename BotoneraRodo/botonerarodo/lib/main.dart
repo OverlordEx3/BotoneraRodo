@@ -166,56 +166,7 @@ class _MyHomePageState extends State<MyHomePage> {
       ),
       body: new GridView.count(
         crossAxisCount: 2,
-        children: <Widget>[
-          new Card(
-            child: new Stack(
-              children: <Widget>[
-                new Image(
-                  image: new AssetImage("images/AriDante.jpeg"),
-                  fit: BoxFit.cover,
-                ),
-                new Column(
-                  mainAxisSize: MainAxisSize.max,
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: <Widget>[
-                    new Row(
-                      children: <Widget>[
-                        new Column(
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: <Widget>[
-                            new Text(
-                              _defSounds[0].name,
-                              textAlign: TextAlign.center,
-                            ),
-                            new Text(
-                              _defSounds[0].desc,
-                              textAlign: TextAlign.center,
-                            )
-                          ],
-                        )
-                      ],
-                    ),
-                    new Row(
-                      children: <Widget>[
-                        new IconButton(
-                          icon: new Icon(Icons.play_circle_filled),
-                          onPressed: dummy,
-                        ),
-                        new IconButton(
-                          icon: new Icon(Icons.share),
-                          onPressed: dummy,
-                        )
-                      ],
-                    )
-                  ],
-                )
-              ],
-            ),
-          ),
-          new Card(
-            child: new Image.asset("images/CloudSword.jpeg"),
-          ),
-        ],
+        children: _buildGridViewCards(_defSounds),
       ),
     );
   }
@@ -224,13 +175,89 @@ class _MyHomePageState extends State<MyHomePage> {
   {
 
   }
+
+  List<Widget> _buildGridViewCards(List<CustomSound> sound)
+  {
+    List<Widget> ret;
+    for (var s in sound) {
+      ret.add(_cardBuild(s));      
+    }
+    
+    return ret;
+  }
+
+
+  Card _cardBuild(CustomSound sound)
+  {
+    return new Card(
+      child: new Stack(
+        children: <Widget>[
+          new Image(
+            image: (sound.cover.image != null) ? sound.cover.image : Colors.white.,
+            fit: BoxFit.cover,
+          ),
+          new Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            mainAxisAlignment: MainAxisAlignment.end,
+            mainAxisSize: MainAxisSize.max,
+            children: <Widget>[
+              new Row(
+                children: <Widget>[
+                  new Column(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    mainAxisSize: MainAxisSize.max,
+                    children: <Widget>[
+                      new Text(
+                        sound.name,
+                        textAlign: TextAlign.center,
+                      ),
+                      new Text(
+                        sound.desc,
+                        textAlign: TextAlign.center,
+                      )
+                    ],
+                  )
+                ],
+              ),
+              new Row(
+                children: <Widget>[
+                  new Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    mainAxisSize: MainAxisSize.max,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: <Widget>[
+                      new IconButton(
+                        icon: new Icon(
+                          (sound.currentState == PlayerState.stopped) ? Icons.play_circle_filled : Icons.pause_circle_filled,
+                        ),
+                        onPressed: dummy,
+                      ),
+                      new IconButton(
+                        icon: new Icon(
+                          Icons.share
+                        ),
+                        onPressed: dummy,
+                      )
+                    ],
+                  )
+                ],
+              )
+            ],
+          )
+        ],
+      )
+    );
+  }
 }
 
-class CustomSound {
+class CustomSound extends AudioPlayer{
   String name;
   String desc;
   String fileName;
   String filePath;
+  Image cover;
+  PlayerState currentState;
 
-  CustomSound(this.fileName, this.filePath, [this.name = "", this.desc = ""]);
+  CustomSound(this.fileName, this.filePath, [this.name = "", this.desc = "", this.cover = Image("images/AriDante.jpeg")]);
 }
