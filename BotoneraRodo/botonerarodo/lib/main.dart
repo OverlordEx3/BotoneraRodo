@@ -114,7 +114,7 @@ class _MyHomePageState extends State<MyHomePage> {
     });
   }
 
-  Future _playLocal() async{
+  Future _playLocal() async {
     final result = await audioPlayer.play(localFilePath, isLocal: true);
     if (result == 1) setState(() => playerState = PlayerState.playing);
   }
@@ -147,10 +147,11 @@ class _MyHomePageState extends State<MyHomePage> {
   Future<ByteData> loadAsset() async {
     return await rootBundle.load('sounds/$audioName.ogg');
   }
+
   void playFile() async {
     final file = new File('${(await getTemporaryDirectory()).path}/music.mp3');
     await file.writeAsBytes((await loadAsset()).buffer.asUint8List());
-    if(isPlaying) {
+    if (isPlaying) {
       stop(); //Before play the next, stop actual
     }
     localFilePath = file.path;
@@ -171,87 +172,104 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 
-  void dummy()
-  {
+  void dummy() {}
 
-  }
+  List<Widget> _buildGridViewCards(List<CustomSound> sound) {
+    List<Widget> ret = new List<Widget>();
 
-  List<Widget> _buildGridViewCards(List<CustomSound> sound)
-  {
-    List<Widget> ret;
-    for (var s in sound) {
-      ret.add(_cardBuild(s));      
+    /* Previous check */
+    if(sound.isEmpty){
+      ret.add(new Text(
+        "Lista vacía!",
+        style: new TextStyle(
+          fontSize: 48.0,
+          fontStyle: FontStyle.normal,
+          fontWeight: FontWeight.bold,
+          color: Colors.redAccent
+        ),
+      ));
+
+      return ret;
     }
-    
+    for (var s in sound) {
+      ret.add(_cardBuild(s));
+    }
+
     return ret;
   }
 
-
-  Card _cardBuild(CustomSound sound)
+  Icon _getAudioIconByPlayerState(PlayerState status)
   {
+    switch(status)
+    {
+      case PlayerState.playing:
+      case PlayerState.paused:
+      return new Icon(Icons.stop);
+      break;
+      case PlayerState.stopped:
+      return new Icon(Icons.play_circle_filled);
+    }
+
+    return new Icon(Icons.play_circle_filled);
+  }
+
+  Card _cardBuild(CustomSound sound) {
     return new Card(
-      child: new Stack(
-        children: <Widget>[
-          new Image(
-            image: (sound.cover.image != null) ? sound.cover.image : Colors.white.,
+        child: new Stack(
+      children: <Widget>[
+/*          new Image(
+            image: sound.cover.image,
             fit: BoxFit.cover,
-          ),
-          new Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            mainAxisAlignment: MainAxisAlignment.end,
-            mainAxisSize: MainAxisSize.max,
-            children: <Widget>[
-              new Row(
-                children: <Widget>[
-                  new Column(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    mainAxisSize: MainAxisSize.max,
-                    children: <Widget>[
-                      new Text(
-                        sound.name,
-                        textAlign: TextAlign.center,
-                      ),
-                      new Text(
-                        sound.desc,
-                        textAlign: TextAlign.center,
-                      )
-                    ],
-                  )
-                ],
-              ),
-              new Row(
-                children: <Widget>[
-                  new Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    mainAxisSize: MainAxisSize.max,
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: <Widget>[
-                      new IconButton(
-                        icon: new Icon(
-                          (sound.currentState == PlayerState.stopped) ? Icons.play_circle_filled : Icons.pause_circle_filled,
-                        ),
-                        onPressed: dummy,
-                      ),
-                      new IconButton(
-                        icon: new Icon(
-                          Icons.share
-                        ),
-                        onPressed: dummy,
-                      )
-                    ],
-                  )
-                ],
-              )
-            ],
-          )
-        ],
-      )
-    );
+          ),*/
+        new Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          mainAxisAlignment: MainAxisAlignment.end,
+          mainAxisSize: MainAxisSize.max,
+          children: <Widget>[
+            new Row(
+              children: <Widget>[
+                new Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  mainAxisSize: MainAxisSize.max,
+                  children: <Widget>[
+                    new Text(
+                      sound.name,
+                      textAlign: TextAlign.center,
+                    ),
+                    new Text(
+                      sound.desc,
+                      textAlign: TextAlign.center,
+                    )
+                  ],
+                )
+              ],
+            ),
+            new Row(
+              mainAxisSize: MainAxisSize.max,
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: <Widget>[
+                new IconButton(
+                  icon: new Icon(
+                    Icons.share,
+                  ),
+                  onPressed: dummy,
+                ),
+                new IconButton(
+                  icon:_getAudioIconByPlayerState(sound.currentState),
+                  onPressed: dummy,
+                )
+              ],
+            )
+          ],
+        )
+      ],
+    ));
   }
 }
 
-class CustomSound extends AudioPlayer{
+class CustomSound extends AudioPlayer {
   String name;
   String desc;
   String fileName;
@@ -259,5 +277,6 @@ class CustomSound extends AudioPlayer{
   Image cover;
   PlayerState currentState;
 
-  CustomSound(this.fileName, this.filePath, [this.name = "", this.desc = "", this.cover = Image("images/AriDante.jpeg")]);
+  CustomSound(this.fileName, this.filePath,
+      [this.name = "", this.desc = "", this.cover, this.currentState = PlayerState.stopped]);
 }
