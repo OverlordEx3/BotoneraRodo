@@ -258,7 +258,16 @@ class _MyHomePageState extends State<MyHomePage> {
                 ),
                 new IconButton(
                   icon:_getAudioIconByPlayerState(sound.currentState),
-                  onPressed: dummy,
+                  onPressed: () {
+                    if(playerState != PlayerState.stopped) {
+                      sound.currentState = PlayerState.stopped;
+                      stop(); //Stop calls setState
+                    } else {
+                      audioName = sound.fileName;
+                      sound.currentState = PlayerState.playing;
+                      playFile();
+                    }
+                  },
                 )
               ],
             )
