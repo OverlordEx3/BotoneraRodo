@@ -9,6 +9,8 @@ import 'package:path_provider/path_provider.dart';
 
 typedef void OnError(Exception exception);
 
+typedef void CompletedState(CustomSound sound);
+
 enum PlayerState { stopped, playing, paused }
 
 void main() => runApp(new MyApp());
@@ -54,108 +56,24 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  List<CustomSound> _soundList;
   List<CustomSound> _defSounds = [
-    new CustomSound("AhiLaTeni", "sounds", "Ahí la tení"),
-    new CustomSound("Hienas", "sounds", "Matensé, hienas"),
-    new CustomSound("RikaChikita", "sounds", "Rika Chikita"),
-    new CustomSound("YChi", "sounds", "Y Chi"),
-    new CustomSound("YEia", "sounds", "Y eia? Como esta eia?"),
+    new CustomSound("AhiLaTeni", "sounds", null, "Ahí la tení"),
+    new CustomSound("Hienas", "sounds", null, "Matensé, hienas"),
+    new CustomSound("RikaChikita", "sounds", null, "Rika Chikita"),
+    new CustomSound("YChi", "sounds", null, "Y Chi"),
+    new CustomSound("YEia", "sounds", null, "Y eia? Como esta eia?"),
   ];
 
-  Duration duration;
-  Duration position;
-
-  AudioPlayer audioPlayer;
-
-  String localFilePath;
-  String audioName = '';
-
-  PlayerState playerState = PlayerState.stopped;
-
-  get isPlaying => playerState == PlayerState.playing;
-  get isPaused => playerState == PlayerState.paused;
-
-  get durationText =>
-      duration != null ? duration.toString().split('.').first : '';
-  get positionText =>
-      position != null ? position.toString().split('.').first : '';
+  CustomAudioPlayer audioPlayer = new CustomAudioPlayer();
 
   @override
   void initState() {
     super.initState();
-    initAudioPlayer();
+    audioPlayer.initAudioPlayer();
   }
 
-  void initAudioPlayer() {
-    audioPlayer = new AudioPlayer();
-
-    audioPlayer.setDurationHandler((d) => setState(() {
-          duration = d;
-        }));
-
-    audioPlayer.setPositionHandler((p) => setState(() {
-          position = p;
-        }));
-
-    audioPlayer.setCompletionHandler(() {
-      onComplete();
-      setState(() {
-        position = duration;
-      });
-    });
-
-    audioPlayer.setErrorHandler((msg) {
-      setState(() {
-        playerState = PlayerState.stopped;
-        duration = new Duration(seconds: 0);
-        position = new Duration(seconds: 0);
-      });
-    });
-  }
-
-  Future _playLocal() async {
-    final result = await audioPlayer.play(localFilePath, isLocal: true);
-    if (result == 1) setState(() => playerState = PlayerState.playing);
-  }
-
-  Future pause() async {
-    final result = await audioPlayer.pause();
-    if (result == 1) setState(() => playerState = PlayerState.paused);
-  }
-
-  Future stop() async {
-    final result = await audioPlayer.stop();
-    if (result == 1)
-      setState(() {
-        playerState = PlayerState.stopped;
-        position = new Duration();
-      });
-  }
-
-  void onComplete() {
-    setState(() => playerState = PlayerState.stopped);
-  }
-
-  @override
-  void dispose() {
-    super.dispose();
-    audioPlayer.stop();
-    /* @TODO clean temporary folder */
-  }
-
-  Future<ByteData> loadAsset() async {
-    return await rootBundle.load('sounds/$audioName.ogg');
-  }
-
-  void playFile() async {
-    final file = new File('${(await getTemporaryDirectory()).path}/music.mp3');
-    await file.writeAsBytes((await loadAsset()).buffer.asUint8List());
-    if (isPlaying) {
-      stop(); //Before play the next, stop actual
-    }
-    localFilePath = file.path;
-    _playLocal();
+  void onAudioPlayCompletion(CustomSound sound) {
+    setState(() => sound.currentStatus = PlayerState.stopped);
   }
 
   @override
@@ -174,19 +92,38 @@ class _MyHomePageState extends State<MyHomePage> {
 
   void dummy() {}
 
+  void requestPlay(CustomSound sound) {
+    setState(() {
+      sound.currentStatus = PlayerState.playing;
+      sound.completedState = onAudioPlayCompletion;
+      audioPlayer.playAudio(sound);
+    });
+  }
+
+  void requestStop(CustomSound sound) {
+    // TODO Try Catch
+    setState(() {
+      sound.currentStatus = PlayerState.stopped;
+      sound.completedState = onAudioPlayCompletion;
+      audioPlayer.stopAudio();
+    });
+  }
+
+  void requestShare(CustomSound sound) {
+  }
+
   List<Widget> _buildGridViewCards(List<CustomSound> sound) {
     List<Widget> ret = new List<Widget>();
 
     /* Previous check */
-    if(sound.isEmpty){
+    if (sound.isEmpty) {
       ret.add(new Text(
         "Lista vacía!",
         style: new TextStyle(
-          fontSize: 48.0,
-          fontStyle: FontStyle.normal,
-          fontWeight: FontWeight.bold,
-          color: Colors.redAccent
-        ),
+            fontSize: 48.0,
+            fontStyle: FontStyle.normal,
+            fontWeight: FontWeight.bold,
+            color: Colors.redAccent),
       ));
 
       return ret;
@@ -198,16 +135,14 @@ class _MyHomePageState extends State<MyHomePage> {
     return ret;
   }
 
-  Icon _getAudioIconByPlayerState(PlayerState status)
-  {
-    switch(status)
-    {
+  Icon _getAudioIconByPlayerState(PlayerState status) {
+    switch (status) {
       case PlayerState.playing:
       case PlayerState.paused:
-      return new Icon(Icons.stop);
-      break;
+        return new Icon(Icons.stop);
+        break;
       case PlayerState.stopped:
-      return new Icon(Icons.play_circle_filled);
+        return new Icon(Icons.play_circle_filled);
     }
 
     return new Icon(Icons.play_circle_filled);
@@ -257,15 +192,12 @@ class _MyHomePageState extends State<MyHomePage> {
                   onPressed: dummy,
                 ),
                 new IconButton(
-                  icon:_getAudioIconByPlayerState(sound.currentState),
+                  icon: _getAudioIconByPlayerState(sound.currentStatus),
                   onPressed: () {
-                    if(playerState != PlayerState.stopped) {
-                      sound.currentState = PlayerState.stopped;
-                      stop(); //Stop calls setState
+                    if (sound.currentStatus != PlayerState.stopped) {
+                      requestStop(sound);
                     } else {
-                      audioName = sound.fileName;
-                      sound.currentState = PlayerState.playing;
-                      playFile();
+                      requestPlay(sound);
                     }
                   },
                 )
@@ -283,9 +215,100 @@ class CustomSound extends AudioPlayer {
   String desc;
   String fileName;
   String filePath;
-  Image cover;
-  PlayerState currentState;
+  PlayerState currentStatus;
+  CompletedState completedState;
 
-  CustomSound(this.fileName, this.filePath,
-      [this.name = "", this.desc = "", this.cover, this.currentState = PlayerState.stopped]);
+  CustomSound(this.fileName, this.filePath, this.completedState,
+      [this.name = "",
+      this.desc = "",
+      this.currentStatus = PlayerState.stopped]);
+}
+
+class CustomAudioPlayer extends AudioPlayer {
+  Duration _duration;
+  Duration _position;
+  AudioPlayer _audioPlayer;
+  PlayerState _playerState = PlayerState.stopped;
+  CustomSound _localSound;
+
+/* Getters */
+  get isPlaying => _playerState == PlayerState.playing;
+  get isPaused => _playerState == PlayerState.paused;
+  get isStopped => _playerState == PlayerState.stopped;
+
+  get durationText =>
+      _duration != null ? _duration.toString().split('.').first : '';
+  get positionText =>
+      _position != null ? _position.toString().split('.').first : '';
+
+  void initAudioPlayer() {
+    _audioPlayer = new AudioPlayer();
+
+    _audioPlayer.setDurationHandler((d) => _duration = d);
+
+    _audioPlayer.setPositionHandler((p) => _position = p);
+
+    _audioPlayer.setCompletionHandler(() {
+      _onComplete();
+      _position = _duration;
+    });
+
+    _audioPlayer.setErrorHandler((msg) {
+      _playerState = PlayerState.stopped;
+      _duration = new Duration(seconds: 0);
+      _position = new Duration(seconds: 0);
+    });
+  }
+
+  void _onComplete() {
+    _playerState = PlayerState.stopped;
+    /* Callback to completedState */
+    _localSound.completedState(_localSound);
+  }
+
+  Future<ByteData> _loadAsset(CustomSound sound) async {
+    return await rootBundle.load('sounds/${sound.fileName}.ogg');
+  }
+
+  Future _playLocal(String filePath) async {
+    final result = await _audioPlayer.play(filePath, isLocal: true);
+    if (result == 1) _playerState = PlayerState.playing;
+  }
+
+  Future _pause() async {
+    final result = await _audioPlayer.pause();
+    if (result == 1) _playerState = PlayerState.paused;
+  }
+
+  Future _stop() async {
+    final result = await _audioPlayer.stop();
+    if (result == 1) {
+      _playerState = PlayerState.stopped;
+      _position = new Duration();
+    }
+  }
+
+  void stopAudio() async {
+    _localSound = null;
+    _stop();
+  }
+
+  void pauseAudio() async {
+    _pause();
+  }
+
+  void playAudio(CustomSound sound) async {
+    final file = new File(
+        '${(await getTemporaryDirectory()).path}/${sound.fileName}.mp3');
+    await file.writeAsBytes((await _loadAsset(sound)).buffer.asUint8List());
+
+    if (sound == _localSound && isPlaying) {
+      _stop();
+    } else if (isPlaying) {
+      _stop();
+    }
+    _localSound = sound;
+
+    _playLocal(file.path);
+  }
 }
