@@ -1,5 +1,5 @@
 name: botonerarodo
-description: A new Flutter project.
+description: Ahi la tení.
 
 dependencies:
   flutter:
@@ -35,20 +35,12 @@ flutter:
   #  - images/a_dot_burr.jpeg
   #  - images/a_dot_ham.jpeg
   assets:
-    - sounds/AhiLaTeni.ogg
-    - sounds/Hienas.ogg
-    - sounds/RikaChikita.ogg
-    - sounds/YChi.ogg
-    - sounds/YEia.ogg
+      - sounds/AhiLaTeni.ogg
+      - sounds/Hienas.ogg
+      - sounds/RikaChikita.ogg
+      - sounds/YChi.ogg
+      - sounds/YEia.ogg
 
-    #imagenes
-
-    - images/AriDante.jpeg
-    - images/CircleWolf.jpeg
-    - images/CloudSword.jpeg
-    - images/cosmicWolf.jpeg
-    - images/TigerTree.jpeg
-    
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.io/assets-and-images/#resolution-aware.
 

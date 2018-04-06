@@ -60,7 +60,6 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 /* TODO move this to another file */
 
-
 /* End of TODO */
   @override
   Widget build(BuildContext context) {
@@ -95,21 +94,22 @@ class _MyHomePageState extends State<MyHomePage> {
     });
   }
 
-  void requestShare(CustomSound sound) {
-  }
+  void requestShare(CustomSound sound) {}
 
   List<Widget> _buildGridViewCards(List<CustomSound> sound) {
     List<Widget> ret = new List<Widget>();
 
     /* Previous check */
     if (sound.isEmpty) {
-      ret.add(new Text(
-        "Lista vacía!",
-        style: new TextStyle(
-            fontSize: 48.0,
-            fontStyle: FontStyle.normal,
-            fontWeight: FontWeight.bold,
-            color: Colors.redAccent),
+      ret.add(new Center(
+        child: new Text(
+          "Lista vacía!",
+          style: new TextStyle(
+              fontSize: 48.0,
+              fontStyle: FontStyle.normal,
+              fontWeight: FontWeight.bold,
+              color: Colors.redAccent),
+        ),
       ));
 
       return ret;
